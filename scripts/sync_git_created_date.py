@@ -47,15 +47,17 @@ def update_frontmatter(file_path, created_date):
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    frontmatter_pattern = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
+    # The closing --- must start a line; an empty frontmatter (---\n---) also matches
+    frontmatter_pattern = re.compile(r"^---\n(.*?)\n?^---", re.DOTALL | re.MULTILINE)
 
     if content.startswith("---"):
         # 已有 frontmatter，检查是否已有 createdDate
         match = frontmatter_pattern.match(content)
         if match:
             frontmatter = match.group(1)
-            if "createdDate:" not in frontmatter:
-                new_frontmatter = frontmatter + f"\ncreatedDate: {created_date}"
+            # Only a top-level createdDate key counts, not comments or nested keys
+            if not re.search(r"^createdDate:", frontmatter, re.M):
+                new_frontmatter = (frontmatter + "\n" if frontmatter else "") + f"createdDate: {created_date}"
                 content = content.replace(match.group(0), f"---\n{new_frontmatter}\n---", 1)
     else:
         # 没有 frontmatter，则新建

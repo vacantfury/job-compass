@@ -29,7 +29,8 @@ def ensure_created_date(content: str, created: str) -> str:
     对于新增文件，即便 frontmatter 有 lastUpdated，也会添加 createdDate
     """
     print("调用 ensure_created_date() ...")
-    fm_pattern = re.compile(r"^---\s*\n(.*?)\n---\s*\n?", re.S)
+    # Consume only one newline after the closing ---, so the body's leading blank line and indentation stay intact
+    fm_pattern = re.compile(r"^---\s*\n(.*?)\n---[ \t]*\n?", re.S)
     match = fm_pattern.match(content)
 
     if match:

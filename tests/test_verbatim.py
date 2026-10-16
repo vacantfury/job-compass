@@ -69,7 +69,6 @@ def test_main_usage_error(verbatim, monkeypatch, capsys, args):
     assert capsys.readouterr().err
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="An unclosed ReferenceSource silently hides all subsequent body lines.")
 def test_unclosed_reference_cannot_pass_verbatim_check(verbatim, write_file, monkeypatch):
     article = write_file("article.md", '<ReferenceSource\n  url="https://example.invalid"\nInvented body')
     source = write_file("source.txt", "Original body")

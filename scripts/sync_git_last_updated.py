@@ -44,21 +44,24 @@ def update_frontmatter(file_path, last_updated):
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
 
-    frontmatter_pattern = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
+    # The closing --- must start a line; an empty frontmatter (---\n---) also matches
+    frontmatter_pattern = re.compile(r"^---\n(.*?)\n?^---", re.DOTALL | re.MULTILINE)
 
     if content.startswith("---"):
         match = frontmatter_pattern.match(content)
         if match:
             frontmatter = match.group(1)
-            if "lastUpdated:" not in frontmatter:
-                new_frontmatter = frontmatter + f"\nlastUpdated: {last_updated}"
+            # Only a top-level lastUpdated key counts, not comments or nested keys
+            if not re.search(r"^lastUpdated:", frontmatter, re.M):
+                new_frontmatter = (frontmatter + "\n" if frontmatter else "") + f"lastUpdated: {last_updated}"
                 content = content.replace(match.group(0), f"---\n{new_frontmatter}\n---", 1)
             else:
-                # 如果已有 lastUpdated，就更新它
+                # 如果已有 lastUpdated，就更新它 (only that line, so an empty value never eats the next line)
                 new_frontmatter = re.sub(
-                    r"lastUpdated:\s*.*",
+                    r"^lastUpdated:.*$",
                     f"lastUpdated: {last_updated}",
-                    frontmatter
+                    frontmatter,
+                    flags=re.M
                 )
                 content = content.replace(match.group(0), f"---\n{new_frontmatter}\n---", 1)
     else:

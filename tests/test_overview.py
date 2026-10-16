@@ -49,7 +49,6 @@ def test_extract_missing_and_yaml_fallback(overview, tmp_path, write_file, monke
     assert overview.extract_frontmatter(path) == {"title": "Guide", "order": "2"}
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="Frontmatter extraction drops the final newline required by YAML block scalar clipping.")
 def test_extract_preserves_folded_scalar_final_newline(overview, write_file):
     path = write_file("page.md", "---\ndescription: >\n  First\n  second\n---\nBody")
     assert overview.extract_frontmatter(path)["description"] == "First second\n"
@@ -64,7 +63,6 @@ def test_normalize_order(overview, value, expected):
     assert overview.normalize_order(value) == expected
 
 
-@pytest.mark.xfail(raises=OverflowError, reason="Infinite order values crash normalization instead of using the fallback.")
 @pytest.mark.parametrize("value", ["inf", float("inf")])
 def test_normalize_infinite_order(overview, value):
     assert overview.normalize_order(value) == 0

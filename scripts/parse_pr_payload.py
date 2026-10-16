@@ -25,7 +25,8 @@ def parse_pr_payload(payload):
     # 封装数据
     pr_data["id"] = payload["number"]
     pr_data["title"] = payload["title"]
-    pr_data["author"] = payload["assignee"]["login"]
+    # The author is the PR creator; assignee may be null or someone else
+    pr_data["author"] = payload["user"]["login"]
     pr_data["createAt"] = payload["created_at"]
     pr_data["mergedAt"] = payload["merged_at"]
     pr_data["link"] = payload["html_url"]

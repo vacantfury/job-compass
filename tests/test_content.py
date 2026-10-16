@@ -1,7 +1,6 @@
 """HTML extraction and subscriber metadata use temporary source files."""
 
 import pytest
-import yaml
 
 
 @pytest.mark.parametrize(("html", "expected"), [
@@ -30,14 +29,12 @@ def test_extract_subscriber_email_and_filename(load_script, write_file, frontmat
     assert module.extract_email_and_filename(str(source)) == (expected, "company.guide")
 
 
-@pytest.mark.xfail(raises=AttributeError, reason="Empty frontmatter loads as None and crashes subscriber metadata extraction.")
 def test_extract_subscriber_with_empty_frontmatter(load_script, write_file):
     module = load_script("notify_direct_hire_company_subscribers.py")
     source = write_file("guide.md", "---\n---\nBody")
     assert module.extract_email_and_filename(str(source)) == (None, "guide")
 
 
-@pytest.mark.xfail(raises=yaml.YAMLError, reason="Splitting on every triple dash truncates valid quoted YAML values.")
 def test_extract_subscriber_with_triple_dash_in_title(load_script, write_file):
     module = load_script("notify_direct_hire_company_subscribers.py")
     source = write_file("guide.md", '---\ntitle: "Guide --- details"\nemail: reader@example.invalid\n---\nBody')

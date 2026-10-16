@@ -34,7 +34,8 @@ def ensure_last_updated(content: str, updated: str) -> str:
     解析 front-matter，添加或更新 lastUpdated 字段
     """
     print("➡️ 调用 ensure_last_updated() ...")
-    fm_pattern = re.compile(r"^---\s*\n(.*?)\n---\s*\n?", re.S)
+    # Consume only one newline after the closing ---, so the body's leading blank line and indentation stay intact
+    fm_pattern = re.compile(r"^---\s*\n(.*?)\n---[ \t]*\n?", re.S)
     match = fm_pattern.match(content)
 
     if match:

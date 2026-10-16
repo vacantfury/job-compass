@@ -1,4 +1,5 @@
 import os
+import re
 import yaml
 import requests
 import sys
@@ -8,9 +9,10 @@ def extract_email_and_filename(file_path):
     # 从 Markdown 文章中提取 email 和 filename
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
-        # 提取 markdown中的frontmatter
-        frontmatter = content.split('---')[1]
-        data = yaml.safe_load(frontmatter)
+        # 提取 markdown中的frontmatter (only a --- on its own line is a delimiter)
+        frontmatter = re.match(r'^---\s*\n(.*?)^---\s*$', content, re.S | re.M).group(1)
+        # an empty frontmatter loads as None
+        data = yaml.safe_load(frontmatter) or {}
         email = data.get('email')
         # 去掉文件的路径和扩展名
         filename = os.path.splitext(os.path.basename(file_path))[0]

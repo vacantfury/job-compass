@@ -71,14 +71,18 @@ def test_walk_only_updates_markdown_with_history(date_script, write_file, monkey
     assert other.read_text(encoding="utf-8") == "{}"
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="A valid empty frontmatter block is not recognized, so no date is inserted.")
 def test_empty_frontmatter_receives_date(date_script, write_file):
     path = write_file("page.md", "---\n---\n\nBody")
     date_script.module.update_frontmatter(path, "2026-01-02")
     assert path.read_text(encoding="utf-8") == f"---\n{date_script.field_name}: 2026-01-02\n---\n\nBody"
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="Date field detection matches YAML comments instead of a top-level key.")
+def test_empty_frontmatter_does_not_absorb_body_rule(date_script, write_file):
+    path = write_file("page.md", "---\n---\n\nBody\n\n---\nA horizontal rule\n")
+    date_script.module.update_frontmatter(path, "2026-01-02")
+    assert path.read_text(encoding="utf-8") == f"---\n{date_script.field_name}: 2026-01-02\n---\n\nBody\n\n---\nA horizontal rule\n"
+
+
 def test_commented_date_does_not_replace_real_field(date_script, write_file):
     path = write_file("page.md", f"---\n# {date_script.field_name}: example\ntitle: Guide\n---\nBody")
     date_script.module.update_frontmatter(path, "2026-01-02")
@@ -87,7 +91,6 @@ def test_commented_date_does_not_replace_real_field(date_script, write_file):
     assert f"# {date_script.field_name}: example" in lines
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="The lastUpdated regex consumes the next YAML field when the date is empty.")
 def test_blank_last_updated_preserves_next_field(load_script, write_file):
     module = load_script("sync_git_last_updated.py")
     path = write_file("page.md", "---\nlastUpdated:\ntitle: Keep\n---\nBody")
@@ -174,14 +177,12 @@ def test_incremental_main_stops_when_no_files(action_script, monkeypatch):
     date.assert_not_called()
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="The closing-frontmatter regex strips leading whitespace from the Markdown body.")
 def test_incremental_dates_preserve_indented_body(action_script):
     content = "---\ntitle: Guide\n---\n\n    code_example()\n"
     result = getattr(action_script.module, action_script.ensure)(content, "2026-01-02")
     assert result.endswith("---\n\n    code_example()\n")
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="A second lastUpdated pass removes the blank line inserted by the first pass.")
 def test_incremental_last_updated_is_idempotent_for_new_frontmatter(load_script, write_file):
     module = load_script("git-actions/add_last_updated_to_md.py")
     path = write_file("page.md", "Body")

@@ -56,6 +56,7 @@ def body_lines(md: str):
             continue
         if stripped.startswith("<ReferenceSource"):
             in_reference = not stripped.endswith("/>")
+            reference_lineno = lineno + 1
             continue
 
         heading = re.match(r"^(#+)\s+(.*)$", stripped)
@@ -74,6 +75,9 @@ def body_lines(md: str):
     # 未闭合的免责声明块会吞掉后面所有行，导致检查假通过
     if in_disclaimer:
         raise ValueError(f"第 {disclaimer_lineno} 行的免责声明块缺少闭合的 :::")
+    # An unclosed <ReferenceSource> would likewise swallow every following line
+    if in_reference:
+        raise ValueError(f"line {reference_lineno}: <ReferenceSource> is missing its closing />")
 
 
 def main() -> int:

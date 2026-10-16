@@ -62,13 +62,11 @@ def test_pr_cli_outputs_json(pr_parser, pr_payload, monkeypatch, capsys):
     assert json.loads(capsys.readouterr().out) == pr_parser.parse_pr_payload(pr_payload)
 
 
-@pytest.mark.xfail(raises=TypeError, reason="An unassigned PR crashes when assignee is null.")
 def test_unassigned_pr_uses_author(pr_parser, pr_payload):
     pr_payload["assignee"] = None
     assert pr_parser.parse_pr_payload(pr_payload)["author"] == "actual-author"
 
 
-@pytest.mark.xfail(raises=AssertionError, reason="The PR author is taken from assignee instead of user.login.")
 def test_pr_author_is_not_assignee(pr_parser, pr_payload):
     pr_payload["assignee"] = {"login": "assigned-editor"}
     assert pr_parser.parse_pr_payload(pr_payload)["author"] == "actual-author"

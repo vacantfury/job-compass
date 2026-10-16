@@ -124,7 +124,8 @@ def extract_frontmatter(file_path: Path) -> dict[str, Any]:
     except FileNotFoundError:
         return {}
 
-    match = re.match(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
+    # Keep the frontmatter's final newline: YAML block scalar (| >) clipping depends on it
+    match = re.match(r'^---\s*\n(.*?\n)---\s*\n', content, re.DOTALL)
     if not match:
         return {}
 
@@ -148,10 +149,10 @@ def normalize_order(value: Any) -> int:
 
     try:
         return int(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         try:
             return int(float(str(value)))
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, OverflowError):
             return 0
 
 
